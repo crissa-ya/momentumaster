@@ -571,11 +571,9 @@ document.getElementById('collideBtn').onclick = () => {
   a.x = canvas.width - padding;
   b.x = padding;
 
-  // Assign velocities toward each other
-  a.vel = 4 + Math.random() * 2;
-  b.vel = 4 + Math.random() * 2;
-  a.dirX = -1;
-  b.dirX = 1;
+  // Keep user-set velocities, just set the direction toward each other
+  a.dirX = -1; // object 1 moves left
+  b.dirX = 1;  // object 2 moves right
   a.dir = a.dirX;
   b.dir = b.dirX;
 
