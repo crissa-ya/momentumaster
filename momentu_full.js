@@ -408,17 +408,52 @@
       const id1 = parseInt(document.getElementById('colObj1').value);
       const id2 = parseInt(document.getElementById('colObj2').value);
 
-      if(isNaN(id1) || isNaN(id2) || id1 === id2){
-        alert("Please select two different objects to collide!");
+      if(isNaN(id1) || isNaN(id2)){
+        alert("Add at least 1 object first!");
         return;
       }
 
-      const a = instances.find(inst => inst.id === id1);
-      const b = instances.find(inst => inst.id === id2);
+      let a = instances.find(inst => inst.id === id1);
+      let b = instances.find(inst => inst.id === id2);
 
-      if(!a || !b){
-        alert("Selected objects not found!");
+      if(!a){
+        alert("Selected object not found!");
         return;
+      }
+
+      // If the user selected the same object in both dropdowns, duplicate it
+      if(id1 === id2){
+        const t = findType(a.typeKey);
+        if (t) {
+          const id = nextId++;
+          b = {
+            id,
+            typeKey: a.typeKey,
+            label: a.label,
+            emoji: a.emoji,
+            mass: a.mass,
+            vel: a.vel,
+            x: a.x,
+            y: a.y,
+            dir: a.dir,
+            dirX: a.dirX,
+            color: randColor(id),
+            scale: a.scale,
+            angle: a.angle,
+            legPhase: Math.random()*Math.PI*2,
+            type: a.type,
+            radius: a.radius
+          };
+          instances.push(b);
+          createInstancePanel(b);
+          refreshCollisionSelects();
+          
+          // Select the newly created duplicate in the second dropdown
+          document.getElementById('colObj2').value = b.id;
+        } else {
+          alert("Could not duplicate object!");
+          return;
+        }
       }
 
       // Align both objects on the same vertical line
