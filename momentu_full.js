@@ -53,6 +53,21 @@
       return palette[idx % palette.length];
     }
 
+    function getCollisionRadius(type){
+      switch(type.key){
+        case 'car': return 40 * type.scale;
+        case 'truck': return 60 * type.scale;
+        case 'motorcycle': return 32.4 * type.scale;
+        case 'bicycle': return 33.6 * type.scale;
+        case 'ball': return 8.4 * type.scale;
+        case 'rocket': return 18 * type.scale;
+        case 'dog': return 27.2 * type.scale;
+        case 'walker': return 5.6 * type.scale;
+        case 'airplane': return 59.4 * type.scale;
+        default: return 20 * type.scale;
+      }
+    }
+
     // populate select
     OBJECT_TYPES.forEach(o=>{
       const opt = document.createElement('option');
@@ -133,7 +148,7 @@
         angle:0,
         legPhase:Math.random()*Math.PI*2,
         type:t.kind,
-        radius: 20*t.scale
+        radius: getCollisionRadius(t)
       };
       instances.push(inst);
       createInstancePanel(inst);
@@ -298,7 +313,13 @@
       instances.forEach(inst=>{
         inst.x+=inst.vel*inst.dirX*0.2;
         inst.angle+=inst.vel*0.05;
-        if(inst.x>canvas.width-40 || inst.x<40) inst.dirX*=-1;
+        const r = inst.radius || 40;
+        if(inst.x>canvas.width-r || inst.x<r){
+          inst.dirX*=-1;
+          if(inst.x<r) inst.x=r;
+          if(inst.x>canvas.width-r) inst.x=canvas.width-r;
+        }
+        inst.dir = inst.dirX;
       });
 
       if(simMode.value==='collision'){
@@ -318,9 +339,9 @@
       for(let i=0;i<instances.length;i++){
         for(let j=i+1;j<instances.length;j++){
           const a=instances[i], b=instances[j];
-          const dx=b.x-a.x;
+              const dx=b.x-a.x;
           const rSum=a.radius+b.radius;
-          if(Math.abs(dx)<rSum){
+          if(Math.abs(dx) <= rSum){
             // 1D elastic collision formula
             // 1D elastic collision along X-axis
             const u1 = a.vel * a.dirX;
@@ -336,7 +357,8 @@
 
             a.dirX = Math.sign(v1Final) || 1;
             b.dirX = Math.sign(v2Final) || 1;
-          
+            a.dir = a.dirX;
+            b.dir = b.dirX;
 
             // Make sure objects move apart
             const overlap = rSum - Math.abs(dx);
@@ -383,13 +405,21 @@
 
 
     document.getElementById('collideBtn').onclick = () => {
-      if(instances.length < 2){
-        alert("Add at least 2 objects first!");
+      const id1 = parseInt(document.getElementById('colObj1').value);
+      const id2 = parseInt(document.getElementById('colObj2').value);
+
+      if(isNaN(id1) || isNaN(id2) || id1 === id2){
+        alert("Please select two different objects to collide!");
         return;
       }
 
-      const a = instances[0]; // first object
-      const b = instances[1]; // second object
+      const a = instances.find(inst => inst.id === id1);
+      const b = instances.find(inst => inst.id === id2);
+
+      if(!a || !b){
+        alert("Selected objects not found!");
+        return;
+      }
 
       // Align both objects on the same vertical line
       const midY = canvas.height / 2;
@@ -406,6 +436,8 @@
       b.vel = 4 + Math.random() * 2;
       a.dirX = -1; // moving left
       b.dirX = 1;  // moving right
+      a.dir = a.dirX;
+      b.dir = b.dirX;
 
       // Set simMode to collision
       simMode.value = 'collision';
