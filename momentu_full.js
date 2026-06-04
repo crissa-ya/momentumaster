@@ -114,7 +114,7 @@ function createInstancePanel(inst) {
   right.appendChild(removeBtn);
 
   wrap.appendChild(left); wrap.appendChild(right);
-  instancesList.appendChild(wrap);
+  instancesList.prepend(wrap);
 
   massNum.oninput = () => { inst.mass = parseFloat(massNum.value) || 0; updateMomentumDisplay(inst); };
   velNum.oninput = () => { inst.vel = parseFloat(velNum.value) || 0; updateMomentumDisplay(inst); };
